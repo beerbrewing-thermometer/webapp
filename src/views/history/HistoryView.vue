@@ -172,12 +172,10 @@ function exportCSV() {
     month: "2-digit",
     day: "2-digit",
   });
-  const formattedDate = dlDf.format(
+  const formattedDate = dlDf.formatToParts(
     datepickerValue.value.toDate(getLocalTimeZone())
   );
-  // Assuming it's in dd/mm/yyyy format
-  const [day, month, year] = formattedDate.split("/");
-  const customFormattedDate = `${year}_${month}_${day}`;
+  const customFormattedDate = `${formattedDate[4].value}_${formattedDate[2].value}_${formattedDate[0].value}`;
 
   a.download = `sud-${customFormattedDate}.csv`;
   a.click();
