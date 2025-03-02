@@ -46,20 +46,13 @@ import {
   Download,
   Trash2,
 } from "lucide-vue-next";
-import { effect, ref } from "vue";
+import { ref } from "vue";
 
 const { toast } = useToast();
 
+let loadedDocs: DataSnapshot[] = [];
 const readings = ref<Reading[]>([]);
 const chartReadings = ref<{ timestamp: string; Temperature: number }[]>([]);
-effect(() => {
-  chartReadings.value = readings.value.map((reading) => {
-    return {
-      timestamp: reading.timestamp.toLocaleTimeString(),
-      Temperature: reading.temperature,
-    };
-  });
-});
 
 const df = new DateFormatter("en-AT", {
   dateStyle: "long",
@@ -80,7 +73,14 @@ async function datepickerChanged(newValue: DateValue | undefined) {
   isLoading.value = false;
 }
 
-let loadedDocs: DataSnapshot[] = [];
+function updateChartReadings() {
+  chartReadings.value = readings.value.map((reading) => {
+    return {
+      timestamp: reading.timestamp.toLocaleTimeString(),
+      Temperature: reading.temperature,
+    };
+  });
+}
 
 async function loadData(startTimestamp: number, endTimestamp: number) {
   const startKey = (startTimestamp / 1000).toFixed(0);
@@ -90,6 +90,7 @@ async function loadData(startTimestamp: number, endTimestamp: number) {
   const q = query(readingsRef, orderByKey(), startAt(startKey), endAt(endKey));
 
   readings.value = [];
+  chartReadings.value = [];
   loadedDocs = [];
 
   const snapshot = await get(q);
@@ -108,6 +109,8 @@ async function loadData(startTimestamp: number, endTimestamp: number) {
       }
     });
   }
+
+  updateChartReadings();
 }
 
 async function deleteData() {
@@ -139,6 +142,7 @@ async function deleteData() {
 
   loadedDocs = [];
   readings.value = [];
+  chartReadings.value = [];
   datepickerValue.value = undefined;
 
   toast({
